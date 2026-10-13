@@ -1,0 +1,9 @@
+{
+  "url_api": "https://kanaxta.tudominio.com",
+  "token": "EL_MISMO_TOKEN_QUE_PUSO_EN_privado/config.php",
+  "agente": "Mozilla/5.0 (compatible; KanaxtaBot/0.1; proyecto academico UNINPAHU; contacto: CORREO@DOMINIO.COM)",
+  "pausa_min_s": 6,
+  "pausa_max_s": 12,
+  "timeout_s": 45,
+  "ventana_precio_px": 1500
+}

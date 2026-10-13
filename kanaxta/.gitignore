@@ -1,0 +1,8 @@
+# Archivos con claves: nunca subirlos a un repositorio
+servidor/privado/config.php
+extractor/config.json
+# Entorno y salidas del extractor
+extractor/.venv/
+extractor/logs/
+extractor/pendientes/
+__pycache__/

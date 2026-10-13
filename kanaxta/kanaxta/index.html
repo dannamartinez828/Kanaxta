@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kanaxta · Costo total de tu canasta</title>
+  <meta name="description" content="Prototipo académico que compara el costo total de adquisición de una canasta básica entre Ara y D1 en Bogotá.">
+  <meta name="theme-color" content="#0b3d2a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f7a4f'/%3E%3Cpath d='M8 9h2.2l2.2 9.2a1.6 1.6 0 0 0 1.6 1.2h7a1.6 1.6 0 0 0 1.5-1.1L24.6 13H11.4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='14' cy='23.5' r='1.6' fill='white'/%3E%3Ccircle cx='21' cy='23.5' r='1.6' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/estilos.css?v=2">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="contenedor">
+      <div class="cabecera__barra">
+        <div class="marca">
+          <span class="marca__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 4h2.2l2.3 9.6a1.8 1.8 0 0 0 1.8 1.4h7.5a1.8 1.8 0 0 0 1.7-1.3L20.6 8H6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="19.5" r="1.6" fill="currentColor"/><circle cx="17" cy="19.5" r="1.6" fill="currentColor"/></svg>
+          </span>
+          <span>Kanaxta</span>
+        </div>
+        <span class="cabecera__sello">Prototipo académico · Bogotá, Av. Carrera 68</span>
+      </div>
+
+      <h1 class="cabecera__titulo">¿Dónde te sale más barato el mercado, contando lo que cuesta llegar?</h1>
+      <p class="cabecera__lema">Compara Ara y D1 con el <strong>costo total de adquisición</strong>: el precio de tu canasta más lo que gastas en ir y volver de la tienda.</p>
+
+      <div class="formula" aria-label="Costo total igual a precio de la canasta más costo de acceso">
+        <div class="formula__parte formula__parte--pc">
+          <span class="formula__sigla">Pc</span>
+          <span class="formula__texto">Precio de la canasta</span>
+        </div>
+        <span class="formula__signo" aria-hidden="true">+</span>
+        <div class="formula__parte formula__parte--ca">
+          <span class="formula__sigla">Ca</span>
+          <span class="formula__texto">Costo de llegar</span>
+        </div>
+        <span class="formula__signo" aria-hidden="true">=</span>
+        <div class="formula__parte formula__parte--cta">
+          <span class="formula__sigla">CTA</span>
+          <span class="formula__texto">Costo total</span>
+        </div>
+        <p class="formula__leyenda">Precio de la canasta + costo de llegar = costo total</p>
+      </div>
+
+      <div id="actualizacion" class="actualizacion" aria-live="polite">Cargando catálogo…</div>
+    </div>
+  </header>
+
+  <main class="contenedor principal">
+    <section class="paso" aria-labelledby="t-canasta">
+      <div class="paso__encabezado">
+        <span class="paso__num" aria-hidden="true">1</span>
+        <div>
+          <h2 id="t-canasta">Arma tu canasta</h2>
+          <p class="ayuda">Elige entre <strong>10 y 12 productos</strong> y ajusta la cantidad de cada uno.</p>
+        </div>
+        <div class="paso__acciones">
+          <button type="button" class="boton-texto" id="elegir-todos">Agregar los 12</button>
+          <button type="button" class="boton-texto" id="vaciar">Vaciar</button>
+        </div>
+      </div>
+      <div id="catalogo" class="catalogo"></div>
+    </section>
+
+    <section class="paso" aria-labelledby="t-viaje">
+      <div class="paso__encabezado">
+        <span class="paso__num" aria-hidden="true">2</span>
+        <div>
+          <h2 id="t-viaje">¿Cómo vas a ir a la tienda?</h2>
+          <p class="ayuda">El costo de ida y regreso se suma al precio de la canasta.</p>
+        </div>
+      </div>
+
+      <fieldset class="modos">
+        <legend class="visualmente-oculto">Modo de desplazamiento</legend>
+        <label class="modo">
+          <input type="radio" name="modo" value="pie" checked>
+          <span class="modo__tarjeta">
+            <svg class="modo__icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="4.5" r="1.8"/><path d="M9.5 21l2.3-6.2 2.7 2.7V21M11.8 14.8l1.2-5.6-3.2 1.4-1.6 3.2M13 9.2l2.4 2.6H18"/></svg>
+            <span class="modo__nombre">A pie o en bicicleta</span>
+            <span class="modo__detalle">Sin costo</span>
+          </span>
+        </label>
+        <label class="modo">
+          <input type="radio" name="modo" value="publico">
+          <span class="modo__tarjeta">
+            <svg class="modo__icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V6.5A3.5 3.5 0 0 1 9.5 3h5A3.5 3.5 0 0 1 18 6.5V17M6 17h12M6 11h12M8 20v-3M16 20v-3"/><circle cx="9" cy="14" r=".6"/><circle cx="15" cy="14" r=".6"/></svg>
+            <span class="modo__nombre">Transporte público</span>
+            <span class="modo__detalle">2 pasajes por persona</span>
+          </span>
+        </label>
+        <label class="modo">
+          <input type="radio" name="modo" value="carro">
+          <span class="modo__tarjeta">
+            <svg class="modo__icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-4l2.2-4.8A2 2 0 0 1 8 6h8a2 2 0 0 1 1.8 1.2L20 12v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1ZM4 12h16M7 17v2M17 17v2"/><circle cx="7.5" cy="14.5" r=".6"/><circle cx="16.5" cy="14.5" r=".6"/></svg>
+            <span class="modo__nombre">Carro particular</span>
+            <span class="modo__detalle">Gasolina + parqueadero</span>
+          </span>
+        </label>
+        <label class="modo">
+          <input type="radio" name="modo" value="taxi">
+          <span class="modo__tarjeta">
+            <svg class="modo__icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17v-4l2.2-4.8A2 2 0 0 1 8 7h8a2 2 0 0 1 1.8 1.2L20 13v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1ZM4 13h16M7 18v2M17 18v2M10 7V4.5h4V7"/><circle cx="7.5" cy="15.5" r=".6"/><circle cx="16.5" cy="15.5" r=".6"/></svg>
+            <span class="modo__nombre">Taxi o aplicación</span>
+            <span class="modo__detalle">Tarifa según distancia</span>
+          </span>
+        </label>
+      </fieldset>
+
+      <div class="opciones" id="op-publico" hidden>
+        <div class="fila">
+          <label>Personas que viajan <input type="number" id="personas" min="1" max="6" value="1"></label>
+        </div>
+      </div>
+      <div class="opciones" id="op-carro" hidden>
+        <div class="fila">
+          <label>Rendimiento de tu carro (km por galón) <input type="number" id="rendimiento" min="5" max="120" step="1"></label>
+          <label>Parqueadero por visita (COP) <input type="number" id="parqueadero" min="0" step="100"></label>
+        </div>
+      </div>
+      <div class="opciones" id="op-distancia" hidden>
+        <div class="ubicacion">
+          <div>
+            <p class="ubicacion__titulo">Distancia de un trayecto hasta cada tienda</p>
+            <p class="ayuda">Usa tu ubicación aproximada para encontrar la sede más cercana, o escribe la distancia.</p>
+          </div>
+          <button type="button" class="boton boton--secundario" id="ubicacion">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.3" fill="currentColor"/></svg>
+            Usar mi ubicación aproximada
+          </button>
+        </div>
+        <p id="sedes-cercanas" class="sedes" aria-live="polite"></p>
+        <div class="fila">
+          <label>Distancia a Ara (km) <input type="number" id="dist-ara" min="0" max="60" step="0.1" inputmode="decimal" placeholder="Ej.: 2,5"></label>
+          <label>Distancia a D1 (km) <input type="number" id="dist-d1" min="0" max="60" step="0.1" inputmode="decimal" placeholder="Ej.: 1,2"></label>
+        </div>
+      </div>
+    </section>
+
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <div class="barra-accion">
+      <div class="barra-accion__progreso">
+        <p class="contador" id="contador" aria-live="polite">0 productos seleccionados</p>
+        <div class="progreso" aria-hidden="true">
+          <span class="progreso__relleno" id="progreso"></span>
+          <span class="progreso__meta" title="Mínimo para comparar"></span>
+        </div>
+      </div>
+      <button type="button" class="boton boton--grande" id="comparar" disabled>Comparar canasta</button>
+    </div>
+
+    <section id="resultados" class="resultados" aria-live="polite" hidden></section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor pie__rejilla">
+      <div>
+        <p class="pie__titulo">Kanaxta</p>
+        <p>Prototipo académico de la Fundación Universitaria para el Desarrollo Humano – UNINPAHU. No está afiliado a Ara ni a D1, no vende productos ni fija precios.</p>
+      </div>
+      <div>
+        <p class="pie__titulo">Sobre los precios</p>
+        <p>Provienen de los sitios web oficiales de cada cadena y se muestran con su fecha de consulta; pueden cambiar. Los costos de acceso son estimaciones. Verifica siempre el precio final en el establecimiento.</p>
+      </div>
+      <div>
+        <p class="pie__titulo">Privacidad</p>
+        <p>Tu canasta y tu ubicación aproximada se guardan solo en este navegador. El servidor recibe únicamente las distancias para hacer el cálculo (Ley 1581 de 2012).</p>
+      </div>
+    </div>
+  </footer>
+  <script src="assets/app.js?v=2"></script>
+</body>
+</html>
