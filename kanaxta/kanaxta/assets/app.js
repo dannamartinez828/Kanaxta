@@ -1,18 +1,18 @@
 /* Kanaxta - interfaz pública (sin dependencias externas). */
 (function () {
   'use strict';
-
-  var MIN = 10, MAX = 12;
+ 
+  var MIN = 1, MAX = 12;
   var CLAVE = 'kanaxta_estado_v1';
   var cop = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-
+ 
   var catalogo = { productos: [], sedes: [], cadenas: [], parametros: {} };
   var estado = cargarEstado();
-
+ 
   var $ = function (id) { return document.getElementById(id); };
-
+ 
   var MODOS = { pie: 'A pie o en bicicleta', publico: 'Transporte público', carro: 'Carro particular', taxi: 'Taxi o aplicación' };
-
+ 
   /* Iconos de línea (24 × 24) para las categorías y los mensajes */
   var ICONOS = {
     grano: '<path d="M12 21V9"/><path d="M12 9c-2.6 0-4-1.7-4-4.6 2.6 0 4 1.7 4 4.6Z"/><path d="M12 9c2.6 0 4-1.7 4-4.6-2.6 0-4 1.7-4 4.6Z"/><path d="M12 14.5c-2.6 0-4-1.7-4-4.3 2.6 0 4 1.6 4 4.3Z"/><path d="M12 14.5c2.6 0 4-1.7 4-4.3-2.6 0-4 1.6-4 4.3Z"/>',
@@ -42,10 +42,10 @@
     if (/hogar|limpieza|aseo/.test(c)) { return 'hogar'; }
     return 'bolsa';
   }
-
+ 
   /* ---------------------------------------------------------- estado local */
   function cargarEstado() {
-    var base = { seleccion: {}, modo: 'pie', personas: 1, rendimiento: '', parqueadero: '', distancias: { ara: '', d1: '' }, aceptadas: [] };
+    var base = { seleccion: {}, modo: 'pie', personas: 1, rendimiento: '', parqueadero: '', distancias: { olimpica: '', d1: '' }, aceptadas: [] };
     try {
       var guardado = JSON.parse(window.localStorage.getItem(CLAVE) || 'null');
       if (guardado && typeof guardado === 'object') {
@@ -57,7 +57,7 @@
   function guardarEstado() {
     try { window.localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) { /* sin almacenamiento */ }
   }
-
+ 
   /* ---------------------------------------------------------- utilidades */
   function esc(texto) {
     return String(texto == null ? '' : texto).replace(/[&<>"']/g, function (c) {
@@ -82,13 +82,13 @@
     return codigo;
   }
   function cantidadSeleccionada() { return Object.keys(estado.seleccion).length; }
-
+ 
   function mostrarError(msg) {
     var e = $('error');
     e.textContent = msg || '';
     e.hidden = !msg;
   }
-
+ 
   /* ---------------------------------------------------------- catálogo */
   function cargarCatalogo() {
     fetch('api/productos.php', { headers: { 'Accept': 'application/json' } })
@@ -108,7 +108,7 @@
         $('actualizacion').textContent = 'No se pudo cargar el catálogo. Intenta de nuevo en unos minutos.';
       });
   }
-
+ 
   function pintarActualizacion() {
     var limite = Number(catalogo.parametros.horas_vigencia) || 24;
     var html = '<span class="actualizacion__titulo">Última consulta de precios:</span>';
@@ -120,7 +120,7 @@
     });
     $('actualizacion').innerHTML = html;
   }
-
+ 
   function pintarCatalogo() {
     var html = '';
     catalogo.productos.forEach(function (p) {
@@ -139,14 +139,14 @@
     $('catalogo').innerHTML = html || '<p class="ayuda">Aún no hay productos activos en el catálogo.</p>';
     actualizarContador();
   }
-
+ 
   function actualizarContador() {
     var n = cantidadSeleccionada();
     var listo = n >= MIN && n <= MAX;
     var c = $('contador');
     var largo = n + ' de ' + MAX + (n === 1 ? ' producto' : ' productos') +
-      (n < MIN ? ' · faltan ' + (MIN - n) + ' para comparar' : (n > MAX ? ' · máximo ' + MAX : ' · listo para comparar'));
-    var corto = n + '/' + MAX + ' · ' + (n < MIN ? 'faltan ' + (MIN - n) : 'listo');
+      (n < MIN ? ' · elige al menos ' + MIN + ' para comparar' : (n > MAX ? ' · máximo ' + MAX : ' · listo para comparar'));
+    var corto = n + '/' + MAX + ' · ' + (n < MIN ? 'elige 1' : 'listo');
     c.innerHTML = '<span class="contador__largo">' + largo + '</span><span class="contador__corto">' + corto + '</span>';
     c.className = 'contador' + (listo ? ' ok' : '');
     var barra = $('progreso');
@@ -154,7 +154,7 @@
     barra.className = 'progreso__relleno' + (listo ? ' ok' : '');
     $('comparar').disabled = !listo;
   }
-
+ 
   $('catalogo').addEventListener('click', function (ev) {
     var objetivo = ev.target.closest('[data-accion]');
     if (!objetivo) { return; }
@@ -176,7 +176,7 @@
     var foco = document.querySelector('.producto[data-id="' + id + '"] [data-accion="' + accion + '"]');
     if (foco && accion !== 'alternar') { foco.focus(); }
   });
-
+ 
   $('elegir-todos').addEventListener('click', function () {
     catalogo.productos.forEach(function (p) {
       if (!estado.seleccion[p.id] && cantidadSeleccionada() < MAX) { estado.seleccion[p.id] = 1; }
@@ -191,7 +191,7 @@
     guardarEstado();
     pintarCatalogo();
   });
-
+ 
   /* ---------------------------------------------------------- desplazamiento */
   function pintarViaje() {
     var radios = document.querySelectorAll('input[name="modo"]');
@@ -201,17 +201,17 @@
     $('rendimiento').placeholder = 'Referencia: ' + (catalogo.parametros.rendimiento_km_galon || 35);
     $('parqueadero').value = estado.parqueadero || '';
     $('parqueadero').placeholder = 'Referencia: ' + (catalogo.parametros.parqueadero || 0);
-    $('dist-ara').value = estado.distancias.ara || '';
+    $('dist-olimpica').value = estado.distancias.olimpica || '';
     $('dist-d1').value = estado.distancias.d1 || '';
     mostrarOpciones();
   }
-
+ 
   function mostrarOpciones() {
     $('op-publico').hidden = estado.modo !== 'publico';
     $('op-carro').hidden = estado.modo !== 'carro';
     $('op-distancia').hidden = !(estado.modo === 'carro' || estado.modo === 'taxi');
   }
-
+ 
   document.querySelector('.modos').addEventListener('change', function (ev) {
     estado.modo = ev.target.value;
     mostrarOpciones();
@@ -220,16 +220,16 @@
   [['personas', 'personas'], ['rendimiento', 'rendimiento'], ['parqueadero', 'parqueadero']].forEach(function (par) {
     $(par[0]).addEventListener('input', function (ev) { estado[par[1]] = ev.target.value; guardarEstado(); });
   });
-  $('dist-ara').addEventListener('input', function (ev) { estado.distancias.ara = ev.target.value; guardarEstado(); });
+  $('dist-olimpica').addEventListener('input', function (ev) { estado.distancias.olimpica = ev.target.value; guardarEstado(); });
   $('dist-d1').addEventListener('input', function (ev) { estado.distancias.d1 = ev.target.value; guardarEstado(); });
-
+ 
   function haversineKm(a, b) {
     var R = 6371, rad = Math.PI / 180;
     var dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
     var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return 2 * R * Math.asin(Math.sqrt(h));
   }
-
+ 
   $('ubicacion').addEventListener('click', function () {
     var salida = $('sedes-cercanas');
     if (!catalogo.sedes.length) { salida.textContent = 'Aún no hay sedes registradas. Escribe la distancia manualmente.'; return; }
@@ -240,7 +240,7 @@
       var origen = { lat: Math.round(pos.coords.latitude * 1000) / 1000, lon: Math.round(pos.coords.longitude * 1000) / 1000 };
       var factor = catalogo.parametros.factor_recorrido || 1.3;
       var textos = [];
-      ['ara', 'd1'].forEach(function (codigo) {
+      ['olimpica', 'd1'].forEach(function (codigo) {
         var mejor = null;
         catalogo.sedes.forEach(function (s) {
           if (s.cadena !== codigo) { return; }
@@ -260,7 +260,7 @@
       salida.textContent = 'No fue posible obtener la ubicación. Escribe la distancia manualmente.';
     }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
   });
-
+ 
   /* ---------------------------------------------------------- comparación */
   function comparar(desplazar) {
     mostrarError('');
@@ -275,7 +275,7 @@
       rendimiento: estado.rendimiento === '' ? null : Number(estado.rendimiento),
       parqueadero: estado.parqueadero === '' ? null : Number(estado.parqueadero),
       distancias: {
-        ara: estado.distancias.ara === '' ? null : Number(estado.distancias.ara),
+        olimpica: estado.distancias.olimpica === '' ? null : Number(estado.distancias.olimpica),
         d1: estado.distancias.d1 === '' ? null : Number(estado.distancias.d1)
       }
     };
@@ -289,9 +289,9 @@
       .then(function () { boton.textContent = 'Comparar canasta'; actualizarContador(); });
   }
   $('comparar').addEventListener('click', function () { comparar(true); });
-
+ 
   var ETIQUETAS = { exacta: 'Coincidencia exacta', alternativa: 'Alternativa similar', pendiente: 'Por clasificar', sin_coincidencia: 'Sin coincidencia' };
-
+ 
   function celdaCadena(c, etiqueta, esMejor) {
     var td = '<td data-label="' + esc(etiqueta) + '"' + (esMejor ? ' class="mejor"' : '') + '>';
     if (!c) { return td + '—</td>'; }
@@ -306,7 +306,7 @@
       '<span class="publicado">' + (c.vigente ? 'Consultado ' : 'No vigente · ') + fecha(c.fecha_hora) + '</span>' +
       (c.manual ? '<span class="etiqueta manual">Registro manual</span>' : '') + '</td>';
   }
-
+ 
   /* Diferencia entre la cadena ganadora y la siguiente (en CTA). */
   function ahorro(d, ganador) {
     var g = d.totales[ganador] && d.totales[ganador].cta;
@@ -316,12 +316,12 @@
     var dif = Math.min.apply(null, otros) - g;
     return dif > 0 ? dif : null;
   }
-
+ 
   function otraCadena(d, codigo) {
     var otras = Object.keys(d.totales).filter(function (c) { return c !== codigo; });
     return otras.length === 1 ? d.totales[otras[0]].nombre : 'la otra cadena';
   }
-
+ 
   function bloqueDecision(d) {
     var hay = d.cobertura.comparables > 0;
     var conManual = d.items.some(function (it) {
@@ -331,7 +331,7 @@
       '<span class="chip">' + esc(MODOS[d.modo] || d.modo) + '</span>' +
       (conManual ? '<span class="chip">Incluye precios de registro manual</span>' : '') + '</div>';
     var variante = '', ico = 'check', titulo = '', texto = '';
-
+ 
     if (!hay) {
       variante = 'neutra'; ico = 'info'; titulo = 'Aún no se puede comparar';
       texto = 'Ningún producto de tu canasta tiene precio vigente en las dos cadenas. Intenta más tarde o cambia algunos productos.';
@@ -359,21 +359,21 @@
     return '<div class="decision' + (variante ? ' decision--' + variante : '') + '"><span class="decision__icono">' + icono(ico) + '</span>' +
       '<div><p class="decision__titulo">' + esc(titulo) + '</p>' + (texto ? '<p class="decision__texto">' + texto + '</p>' : '') + chips + '</div></div>';
   }
-
+ 
   function pintarResultados(d, desplazar) {
     var cods = Object.keys(d.totales);
     var hay = d.cobertura.comparables > 0;
     var html = '<div class="paso__encabezado"><span class="paso__num" aria-hidden="true">3</span><div>' +
       '<h2>Resultado de la comparación</h2><p class="ayuda">Calculado el ' + fecha(d.generado_en) + '</p></div></div>';
-
+ 
     html += bloqueDecision(d);
-
+ 
     var maximo = 0;
     cods.forEach(function (codigo) {
       var t = d.totales[codigo];
       maximo = Math.max(maximo, (hay ? t.pc : 0) + (t.ca || 0));
     });
-
+ 
     html += '<div class="resumen">';
     cods.forEach(function (codigo) {
       var t = d.totales[codigo];
@@ -392,11 +392,11 @@
         '<small>' + esc(t.ca_detalle) + (t.distancia_km != null ? ' · ' + km(t.distancia_km) + ' km por trayecto' : '') + '</small></article>';
     });
     html += '</div>';
-
+ 
     if (d.advertencias && d.advertencias.length) {
       html += '<ul class="advertencias">' + d.advertencias.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
     }
-
+ 
     html += '<div class="tabla"><table><thead><tr><th>Producto</th><th>Cant.</th>' +
       cods.map(function (c) { return '<th>' + esc(d.totales[c].nombre) + '</th>'; }).join('') + '<th>Estado</th></tr></thead><tbody>';
     d.items.forEach(function (it) {
@@ -420,13 +420,13 @@
     });
     html += '</tbody></table></div>';
     html += '<p class="aviso-final">' + esc(d.aviso) + '</p>';
-
+ 
     var cont = $('resultados');
     cont.innerHTML = html;
     cont.hidden = false;
     if (desplazar) { cont.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   }
-
+ 
   $('resultados').addEventListener('change', function (ev) {
     var id = ev.target.getAttribute('data-aceptar');
     if (!id) { return; }
@@ -437,6 +437,6 @@
     guardarEstado();
     comparar(false);
   });
-
+ 
   cargarCatalogo();
 })();

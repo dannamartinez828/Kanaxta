@@ -14,7 +14,7 @@ $p = kx_parametros($pdo);
 
 $cadenas = $pdo->query('SELECT id, codigo, nombre FROM cadena ORDER BY id')->fetchAll();
 $codigos = array_column($cadenas, 'codigo');
-$cadenaSel = in_array($_GET['cadena'] ?? '', $codigos, true) ? $_GET['cadena'] : ($codigos[0] ?? 'ara');
+$cadenaSel = in_array($_GET['cadena'] ?? '', $codigos, true) ? $_GET['cadena'] : ($codigos[0] ?? 'olimpica');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     kx_csrf_verificar();

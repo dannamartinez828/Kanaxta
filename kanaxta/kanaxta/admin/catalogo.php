@@ -1,5 +1,5 @@
 <?php
-/* Catálogo de referencia y URL de cada producto en Ara y D1 (RF-14). */
+/* Catálogo de referencia y URL de cada producto en Olímpica y D1 (RF-14). */
 declare(strict_types=1);
 require __DIR__ . '/_comun.php';
 $admin = kx_requerir_login();
@@ -69,6 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = trim((string) ($_POST['categoria'] ?? ''));
     $cantidad = (float) str_replace(',', '.', (string) ($_POST['cantidad_ref'] ?? '0'));
     $unidad = in_array($_POST['unidad'] ?? '', ['g', 'ml', 'und'], true) ? $_POST['unidad'] : null;
+    $claves = mb_substr(trim((string) ($_POST['palabras_clave'] ?? '')), 0, 200);
+    $excluir = mb_substr(trim((string) ($_POST['palabras_excluir'] ?? '')), 0, 200);
     $valido = $nombre !== '' && $categoria !== '' && $cantidad > 0 && $unidad !== null;
 
     if (($accion === 'crear' || $accion === 'guardar') && !$valido) {
@@ -83,13 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $pdo->beginTransaction();
     if ($accion === 'crear') {
-        $pdo->prepare('INSERT INTO producto_referencia (nombre_generico, categoria, cantidad_ref, unidad) VALUES (?, ?, ?, ?)')
-            ->execute([mb_substr($nombre, 0, 120), mb_substr($categoria, 0, 60), $cantidad, $unidad]);
+        $pdo->prepare('INSERT INTO producto_referencia (nombre_generico, categoria, cantidad_ref, unidad, palabras_clave, palabras_excluir) VALUES (?, ?, ?, ?, ?, ?)')
+            ->execute([mb_substr($nombre, 0, 120), mb_substr($categoria, 0, 60), $cantidad, $unidad, $claves ?: null, $excluir ?: null]);
         $refId = (int) $pdo->lastInsertId();
     } elseif ($accion === 'guardar') {
         $refId = (int) ($_POST['id'] ?? 0);
-        $pdo->prepare('UPDATE producto_referencia SET nombre_generico = ?, categoria = ?, cantidad_ref = ?, unidad = ?, activo = ? WHERE id = ?')
-            ->execute([mb_substr($nombre, 0, 120), mb_substr($categoria, 0, 60), $cantidad, $unidad, isset($_POST['activo']) ? 1 : 0, $refId]);
+        $pdo->prepare('UPDATE producto_referencia SET nombre_generico = ?, categoria = ?, cantidad_ref = ?, unidad = ?, palabras_clave = ?, palabras_excluir = ?, activo = ? WHERE id = ?')
+            ->execute([mb_substr($nombre, 0, 120), mb_substr($categoria, 0, 60), $cantidad, $unidad, $claves ?: null, $excluir ?: null, isset($_POST['activo']) ? 1 : 0, $refId]);
     } else {
         $pdo->rollBack();
         kx_redirigir('catalogo.php');
@@ -123,7 +125,7 @@ function kx_select_unidad(string $actual): string
 }
 
 kx_encabezado('Catálogo de referencia', $admin);
-echo '<p class="nota">Para cada producto pegue la URL de su ficha en el sitio web de cada cadena. La presentación se expresa en gramos, mililitros o unidades (1 kg = 1000 g; 1 L = 1000 ml). La canasta del estudio tiene de 10 a 12 productos activos.</p>';
+echo '<p class="nota">Para cada producto pegue la URL de su ficha en el sitio web de cada cadena. La presentación se expresa en gramos, mililitros o unidades (1 kg = 1000 g; 1 L = 1000 ml). La canasta del estudio tiene de 10 a 12 productos activos. <strong>Si deja una URL vacía, el extractor la busca solo</strong> con las palabras clave (todas deben aparecer en la ficha; use | para alternativas, p. ej. espagueti|spaghetti) y descarta las fichas que contengan alguna palabra a excluir. Lo que encuentre queda como propuesta en Equivalencias para que usted la apruebe.</p>';
 
 foreach ($productos as $r) {
     echo '<form method="post" class="tarjeta producto" id="ref' . (int) $r['id'] . '">' . kx_csrf_campo()
@@ -132,7 +134,9 @@ foreach ($productos as $r) {
         . '<label>Categoría <input name="categoria" value="' . h($r['categoria']) . '" required></label>'
         . '<label>Cantidad <input name="cantidad_ref" value="' . h(kx_num($r['cantidad_ref'])) . '" inputmode="decimal" required></label>'
         . '<label>Unidad ' . kx_select_unidad($r['unidad']) . '</label>'
-        . '<label class="check"><input type="checkbox" name="activo"' . ($r['activo'] ? ' checked' : '') . '> Activo</label></div>';
+        . '<label class="check"><input type="checkbox" name="activo"' . ($r['activo'] ? ' checked' : '') . '> Activo</label></div>'
+        . '<div class="fila"><label>Palabras clave (búsqueda automática) <input name="palabras_clave" value="' . h((string) ($r['palabras_clave'] ?? '')) . '" placeholder="arroz"></label>'
+        . '<label>Palabras a excluir <input name="palabras_excluir" value="' . h((string) ($r['palabras_excluir'] ?? '')) . '" placeholder="integral leche"></label></div>';
     foreach ($cadenas as $c) {
         echo '<label>URL en ' . h($c['nombre']) . ' <input type="url" name="url_' . h($c['codigo']) . '" value="' . h($urls[$r['id']][$c['codigo']] ?? '') . '" placeholder="' . h($c['sitio_web']) . '…"></label>';
     }
@@ -141,7 +145,8 @@ foreach ($productos as $r) {
 
 echo '<h2>Agregar producto</h2><form method="post" class="tarjeta producto">' . kx_csrf_campo() . '<input type="hidden" name="accion" value="crear">'
     . '<div class="fila"><label>Nombre <input name="nombre" required></label><label>Categoría <input name="categoria" required></label>'
-    . '<label>Cantidad <input name="cantidad_ref" inputmode="decimal" required></label><label>Unidad ' . kx_select_unidad('g') . '</label></div>';
+    . '<label>Cantidad <input name="cantidad_ref" inputmode="decimal" required></label><label>Unidad ' . kx_select_unidad('g') . '</label></div>'
+    . '<div class="fila"><label>Palabras clave (búsqueda automática) <input name="palabras_clave"></label><label>Palabras a excluir <input name="palabras_excluir"></label></div>';
 foreach ($cadenas as $c) {
     echo '<label>URL en ' . h($c['nombre']) . ' <input type="url" name="url_' . h($c['codigo']) . '"></label>';
 }
